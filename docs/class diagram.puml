@@ -1,0 +1,233 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam stereotypeFontColor #2D3E50
+skinparam stereotypeFontStyle italic
+
+'========================================
+' DOMAIN ENTITIES
+'========================================
+
+class User {
+  - userId : String
+  - name : String
+  - nationalId : String
+  - phone : String
+  - email : String
+  - password : String
+  - role : UserRole
+  - status : UserStatus
+  
+  + authenticate()
+  + recoverPassword()
+  + updateProfile()
+  + viewDashboard()
+  + viewNotifications()
+}
+
+class Employee {
+  - employeeCode : String
+  - department : String
+  - position : String
+  
+  + requestReservation()
+  + cancelReservation()
+  + checkIn()
+  + viewHistory()
+}
+
+User <|-- Employee
+
+class Company {
+  - companyId : String
+  - name : String
+  - address : String
+  - industry : String
+  
+  + addEmployee()
+  + removeEmployee()
+  + updateCompanyData()
+}
+
+class Facility {
+  - facilityId : String
+  - name : String
+  - location : String
+  - capacity : int
+  - type : FacilityType
+  
+  + updateCapacity()
+  + getSessions()
+  + listVisitors()
+}
+
+class Service {
+  - serviceId : String
+  - name : String
+  - description : String
+  - category : ServiceCategory
+  - baseQuota : int
+  
+  + getAvailableSessions()
+  + calculateQuota()
+}
+
+class Session {
+  - sessionId : String
+  - startTime : DateTime
+  - endTime : DateTime
+  - maxCapacity : int
+  - status : SessionStatus
+  - reservedCount : int
+  
+  + checkCapacity()
+  + addReservation()
+  + removeReservation()
+}
+
+class Reservation {
+  - reservationId : String
+  - reservationDate : DateTime
+  - status : ReservationStatus
+  
+  + confirm()
+  + cancel()
+  + checkIn()
+}
+
+class Quota {
+  - quotaId : String
+  - value : int
+  - period : QuotaPeriod
+  
+  + checkRemaining()
+  + reduceQuota()
+  + resetQuota()
+}
+
+class Notification {
+  - notificationId : String
+  - message : String
+  - type : NotificationType
+  - sendDate : DateTime
+  - readStatus : Boolean
+  
+  + markAsRead()
+}
+
+class Attendance {
+  - attendanceId : String
+  - checkInTime : DateTime
+  - verifiedBy : String
+  
+  + verify()
+}
+
+'========================================
+' DOMAIN RELATIONSHIPS
+'========================================
+
+User "1" --> "0..*" Reservation
+User "1" --> "0..*" Notification
+User "1" --> "0..*" Quota
+
+Company "1" --> "0..*" Employee
+
+Facility "1" --> "0..*" Session
+Service "1" --> "0..*" Session
+Session "1" --> "0..*" Reservation
+
+Reservation "1" --> "0..1" Attendance
+
+Quota "1" --> "1" Service
+
+'========================================
+' ANALYSIS CONTROLLERS
+'========================================
+
+class AuthController <<control>> {
+  + login(userId, password)
+  + validateUser(user)
+  + recoverPassword(email)
+}
+
+class ReservationController <<control>> {
+  + createReservation(user, session)
+  + cancelReservation(reservation)
+  + checkQuota(user, service)
+  + checkSessionCapacity(session)
+  + getHistory(user)
+}
+
+class ServiceController <<control>> {
+  + listServices()
+  + getServiceDetails(serviceId)
+}
+
+class FacilityController <<control>> {
+  + manageCapacity(facility)
+  + listSessions(facility)
+  + verifyAttendance(reservation)
+  + getVisitors(session)
+}
+
+class ReportingController <<control>> {
+  + generatePersonalReport(user)
+  + generateHRReport(company)
+  + generateSystemReport()
+  + generateFacilityReport(facility)
+}
+
+class QuotaController <<control>> {
+  + assignQuota(user, service, value)
+  + getQuota(user, service)
+  + updateQuota(user, service)
+}
+
+class CompanyController <<control>> {
+  + addCompany(company)
+  + updateCompany(company)
+  + configureOrganizationalAccess(company)
+}
+
+class NotificationController <<control>> {
+  + sendNotification(user, message)
+  + getUserNotifications(user)
+}
+
+'========================================
+' CONTROLLER RELATIONSHIPS
+'========================================
+
+AuthController --> User
+ReservationController --> Reservation
+ReservationController --> Session
+ServiceController --> Service
+FacilityController --> Facility
+FacilityController --> Session
+ReportingController --> Reservation
+ReportingController --> Attendance
+QuotaController --> Quota
+CompanyController --> Company
+NotificationController --> Notification
+
+'========================================
+' BOUNDARY CLASSES
+'========================================
+
+class LoginForm <<boundary>>
+class DashboardView <<boundary>>
+class ProfilePage <<boundary>>
+class ReservationPage <<boundary>>
+class ReportsUI <<boundary>>
+class AdminPanel <<boundary>>
+class FacilityManagementUI <<boundary>>
+
+LoginForm --> AuthController
+DashboardView --> ReportingController
+ProfilePage --> ProfileController
+ReservationPage --> ReservationController
+ReportsUI --> ReportingController
+AdminPanel --> CompanyController
+FacilityManagementUI --> FacilityController
+
+@enduml
