@@ -1,0 +1,61 @@
+@startuml
+left to right direction
+skinparam componentStyle rectangle
+
+actor User
+
+' ===== Client Layer =====
+component "Web / Mobile Client" as Client
+component "API Gateway" as Gateway
+
+' ===== Core Microservices =====
+component "Authentication Service" as Auth
+component "User Service" as UserSvc
+component "Reservation Service" as ResSvc
+component "Quota Service" as QuotaSvc
+component "Facility Service" as FacilitySvc
+component "Check-in Service" as CheckinSvc
+component "Reporting Service" as ReportSvc
+component "Notification Service" as NotifSvc
+
+' ===== Databases (Database per Service) =====
+database "User DB" as UserDB
+database "Reservation DB" as ResDB
+database "Quota DB" as QuotaDB
+database "Facility DB" as FacilityDB
+database "Attendance DB" as AttendDB
+database "Report DB" as ReportDB
+
+' ===== User Interaction =====
+User --> Client
+Client --> Gateway
+
+' ===== Gateway Dependencies =====
+Gateway --> Auth
+Gateway --> UserSvc
+Gateway --> ResSvc
+Gateway --> CheckinSvc
+Gateway --> ReportSvc
+Gateway --> NotifSvc
+
+' ===== Service-to-Service Dependencies =====
+Auth --> UserSvc : validate user
+ResSvc --> QuotaSvc : check quota
+ResSvc --> FacilitySvc : check capacity
+CheckinSvc --> UserSvc : validate user
+CheckinSvc --> FacilitySvc : verify attendance
+ReportSvc --> UserSvc : read data
+ReportSvc --> ResSvc : read reservations
+ReportSvc --> FacilitySvc : read facilities
+NotifSvc --> UserSvc : get user info
+
+' ===== Database Connections =====
+UserSvc --> UserDB
+Auth --> UserDB
+ResSvc --> ResDB
+QuotaSvc --> QuotaDB
+FacilitySvc --> FacilityDB
+CheckinSvc --> AttendDB
+ReportSvc --> ReportDB
+
+@enduml
