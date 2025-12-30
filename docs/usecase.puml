@@ -1,0 +1,164 @@
+@startuml
+left to right direction
+skinparam actorStyle stickman
+skinparam usecaseBorderColor #2D3E50
+skinparam usecaseBackgroundColor #E8EFF7
+skinparam actorBorderColor #2D3E50
+
+'=====================
+'     ACTORS
+'=====================
+actor "Employee" as Emp
+actor "Family Member" as FM
+actor "HR Manager" as HR
+actor "System Administrator" as SA
+actor "Facility Manager" as FMG
+
+rectangle "Welfare Management System" as WS {
+
+  '===========================
+  '   GENERAL FUNCTIONALITY
+  '===========================
+  usecase "Authentication" as UC_Auth
+  usecase "Password Recovery" as UC_PassRec
+  usecase "View Notifications" as UC_Notif
+  usecase "Validate User" as UC_ValidateUser
+  usecase "Check Capacity" as UC_CheckCapacity
+  usecase "View Services" as UC_ViewServices
+
+  '===========================
+  '   REPORTING MODULE
+  '===========================
+  usecase "Reporting" as UC_Report
+  usecase "Personal Report" as UC_PersonalReport
+  usecase "HR Reports" as UC_HRRep
+  usecase "System Reports" as UC_SysRep
+  usecase "Facility Reports" as UC_FacRep
+
+  UC_PersonalReport -|> UC_Report
+  UC_HRRep -|> UC_Report
+  UC_SysRep -|> UC_Report
+  UC_FacRep -|> UC_Report
+
+  '===========================
+  '   SHARED USER USE CASES
+  '===========================
+  usecase "Login" as UC_Login
+  usecase "View Dashboard" as UC_ViewDash
+  usecase "Manage Profile" as UC_ManageProf
+  usecase "Reserve Service" as UC_Reserve
+  usecase "Cancel Reservation" as UC_Cancel
+  usecase "Check-in" as UC_Checkin
+  usecase "View Reservation History" as UC_History
+  usecase "Check Quota" as UC_CheckQuota
+
+  UC_Reserve --> UC_CheckQuota : <<include>>
+  UC_Reserve --> UC_CheckCapacity : <<include>>
+  UC_Checkin --> UC_ValidateUser : <<include>>
+  UC_Login .> UC_Auth : <<include>>
+
+  '===========================
+  '   HR MANAGER USE CASES
+  '===========================
+  usecase "Manage Employees" as UC_ManageEmp
+  usecase "Manage Quotas" as UC_ManageQuota
+  usecase "Configure Organizational Access" as UC_OrgAccess
+  usecase "Monitor Service Usage" as UC_Monitor
+
+  '===========================
+  '   SYSTEM ADMIN USE CASES
+  '===========================
+  usecase "Manage Companies" as UC_ManageComp
+  usecase "System Configuration" as UC_SysConfig
+  usecase "Multi-Company Setup" as UC_MultiComp
+  usecase "System Access Management" as UC_SysAccess
+  usecase "Send System Notifications" as UC_SendNotif
+  usecase "Manage System Capacity" as UC_SysCapacity
+
+  '===========================
+  '   FACILITY MANAGER USE CASES
+  '===========================
+  usecase "Manage Capacity" as UC_ManageCapacity
+  usecase "Verify Attendance" as UC_VerifyAttendance
+  usecase "Manage Sessions" as UC_ManageSessions
+  usecase "View Visitors List" as UC_ViewVisitors
+  usecase "Manage Service Inventory" as UC_Inventory
+
+  ' روابط (توجه: UC_ManageCapacity فقط یک بار تعریف شده)
+  UC_ViewVisitors --> UC_ManageSessions : <<include>>
+  UC_Checkin <.. UC_VerifyAttendance : <<extend>>
+
+  ' سیستمِ ادمین می‌تواند بر Manage Capacity تأثیر بگذارد (ارتباط فقط ارجاعی)
+  UC_SysCapacity -|> UC_ManageCapacity
+  UC_MultiComp --> UC_SysConfig : <<include>>
+}
+
+'=====================
+' ACTOR CONNECTIONS
+'=====================
+
+' Shared Users (Employee + Family Member)
+Emp --> UC_Login
+FM --> UC_Login
+
+Emp --> UC_ViewDash
+FM --> UC_ViewDash
+
+Emp --> UC_ManageProf
+FM --> UC_ManageProf
+
+Emp --> UC_Reserve
+FM --> UC_Reserve
+
+Emp --> UC_Cancel
+FM --> UC_Cancel
+
+Emp --> UC_Checkin
+FM --> UC_Checkin
+
+Emp --> UC_History
+FM --> UC_History
+
+Emp --> UC_ViewServices
+FM --> UC_ViewServices
+
+' Personal Report (merged use case)
+Emp --> UC_PersonalReport
+FM --> UC_PersonalReport
+
+' General Services
+Emp --> UC_Auth
+FM --> UC_Auth
+Emp --> UC_PassRec
+FM --> UC_PassRec
+Emp --> UC_Notif
+FM --> UC_Notif
+
+' HR
+HR --> UC_ManageEmp
+HR --> UC_ManageQuota
+HR --> UC_OrgAccess
+HR --> UC_Monitor
+HR --> UC_HRRep
+HR --> UC_Auth
+
+' System Admin
+SA --> UC_ManageComp
+SA --> UC_SysConfig
+SA --> UC_MultiComp
+SA --> UC_SysAccess
+SA --> UC_SendNotif
+SA --> UC_SysCapacity
+SA --> UC_SysRep
+SA --> UC_Auth
+
+' Facility Manager
+FMG --> UC_VerifyAttendance
+FMG --> UC_ManageSessions
+FMG --> UC_ViewVisitors
+FMG --> UC_ManageCapacity
+FMG --> UC_Inventory
+FMG --> UC_FacRep
+FMG --> UC_Auth
+
+@enduml
